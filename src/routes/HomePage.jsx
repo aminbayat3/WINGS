@@ -1,10 +1,8 @@
-import { useState } from "react";
-import VisualEditor from "../components/VisualEditor";
+import VisualEditorView from "../components/VisualEditorView";
 
 const HomePage = () => {
-
   return (
-    <VisualEditor />
+    <VisualEditorView />
   );
 };
 

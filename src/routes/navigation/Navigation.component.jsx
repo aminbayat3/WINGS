@@ -4,7 +4,7 @@ import { useTheme } from "@mui/material/styles";
 import NavbarItems from "./NavbarItems.component";
 import ThemeSelectBox from "./ThemeSelectBox.component";
 
-import { useOpenClose } from "../../hooks/useModalToggle";
+import { useDialogControl } from "../../hooks/useDialogControl";
 
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -33,7 +33,7 @@ import {
 
 const Navigation = () => {
   const {
-    palette: { primary },
+    palette: { secondary },
     spacing,
   } = useTheme();
 
@@ -41,7 +41,7 @@ const Navigation = () => {
     isOpen: isDrawerOpen,
     open: openDrawer,
     close: closeDrawer,
-  } = useOpenClose();
+  } = useDialogControl();
 
   return (
     <Box sx={{ display: "flex", position: "relative" }}>
@@ -76,9 +76,9 @@ const Navigation = () => {
                 variant="h6"
                 noWrap
                 component="div"
-                sx={{ display: "flex", alignItems: "center" }}
+                sx={{ display: "flex", alignItems: "center", fontSize:"15px", fontWeight: 600 }}
               >
-                Smart Meal Planner
+                WINGS
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -106,7 +106,7 @@ const Navigation = () => {
       >
         <DrawerHeader>
           <IconButton onClick={closeDrawer}>
-            <ChevronLeftIcon sx={{ color: primary.main }} />
+            <ChevronLeftIcon sx={{ color: secondary.dark }} />
           </IconButton>
         </DrawerHeader>
         <Divider />

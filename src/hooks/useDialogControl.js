@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export const useOpenClose = () => {
+export const useDialogControl = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const open = () => setIsOpen(true);

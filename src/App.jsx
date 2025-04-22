@@ -1,3 +1,4 @@
+import React from "react";
 import { useSelector } from "react-redux";
 import { Route, Routes } from "react-router-dom";
 
@@ -9,6 +10,8 @@ import Navigation from "./routes/navigation/Navigation.component";
 import { ThemeProvider } from "@mui/material";
 import { THEME_DATA } from "./constants/theme-names.constant";
 
+import ModalHost from "./components/modal-system/ModalHost";
+
 const App = () => {
   const themeKey = useSelector(selectThemeKey);
 
@@ -19,6 +22,7 @@ const App = () => {
           <Route index element={<HomePage />}></Route>
         </Route>
       </Routes>
+      <ModalHost />
     </ThemeProvider>
   );
 };

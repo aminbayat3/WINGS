@@ -1,8 +1,10 @@
 import { combineReducers } from "redux";
 import { themeReducer } from "./theme/theme.reducer";
-import { preferencesReducer } from "./preferences/preferences.reducer";
+import { visualEditorReducer } from "./visual-editor/visual-editor.reducer";
+import { modalReducer } from "./modal/modal.reducer";
 
 export const rootReducer = combineReducers({
- theme: themeReducer,
- preferences: preferencesReducer,
+  theme: themeReducer,
+  visualEditor: visualEditorReducer,
+  modal: modalReducer,
 });

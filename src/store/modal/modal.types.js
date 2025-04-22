@@ -1,0 +1,9 @@
+export const MODAL_ACTION_TYPES = {
+  SHOW_MODAL: "SHOW_MODAL",
+  CLOSE_MODAL: "CLOSE_MODAL",
+};
+
+export const MODAL_TYPES = {
+  NODE_EDIT: "NODE_EDIT",
+  RENAME_NODE: "RENAME_NODE",
+};
