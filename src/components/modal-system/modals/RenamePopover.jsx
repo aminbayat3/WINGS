@@ -2,11 +2,38 @@ import { Popover, Typography, TextField, Box, Stack } from "@mui/material";
 import { useState } from "react";
 import { ModalButton } from "./styles/modalButton.styles";
 
+const escapeRegExp = (string) =>
+  string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const updateDescriptionTitles = (description, oldTitle, newTitle) => {
+  if (!description) return description;
+
+  const labelPattern = new RegExp(
+    `\\[\\[([^\\]]+?)\\|${escapeRegExp(oldTitle)}\\]\\]`,
+    'g'
+  );
+
+  const noLabelPattern = new RegExp(
+    `\\[\\[${escapeRegExp(oldTitle)}\\]\\]`,
+    'g'
+  );
+
+  const afterLabel = description.replace(labelPattern, (_, label) => {
+    return `[[${label}|${newTitle}]]`;
+  });
+
+  const afterSimple = afterLabel.replace(noLabelPattern, () => {
+    return `[[${newTitle}]]`;
+  });
+
+  return afterSimple;
+};
+
 const RenamePopover = ({
   anchorEl,
   selectedNode,
   onClose,
-  handleNodeSave,
+  handleTitleSave,
   existingNodes,
 }) => {
   const [title, setTitle] = useState("");
@@ -33,10 +60,33 @@ const RenamePopover = ({
 
   const handleSave = () => {
     if (!error && title) {
-      handleNodeSave({
+      const oldTitle = selectedNode.data.title;
+      const newTitle = title.trim();
+
+      // Update the selected node itself
+      const updatedSelectedNode = {
         ...selectedNode,
-        data: { ...selectedNode.data, title },
+        data: { ...selectedNode.data, title: newTitle },
+      };
+
+      // Update descriptions in all nodes
+      const updatedNodes = existingNodes.map((node) => {
+        const newDescription = updateDescriptionTitles(
+          node.data.description,
+          oldTitle,
+          newTitle
+        );
+      
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            description: newDescription,
+          },
+        };
       });
+
+      handleTitleSave(updatedSelectedNode, updatedNodes);
       onClose();
     }
   };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNodesState, useEdgesState, addEdge } from "@xyflow/react";
 import {
@@ -7,11 +7,11 @@ import {
   generateNewNode,
 } from "./visual-editor.utils";
 import VisualEditor from "./VisualEditor";
-import ToolbarPanel from "./ToolbarPanel";
-import { setSelectedNode } from "../store/visual-editor/visual-editor.action";
-import { selectSelectedNode } from "../store/visual-editor/visual-editor.selector";
-import { showModal } from "../store/modal/modal.action";
-import { MODAL_TYPES } from "../store/modal/modal.types";
+import ToolbarPanel from "../ToolbarPanel";
+import { setSelectedNode } from "../../store/visual-editor/visual-editor.action";
+import { selectSelectedNode } from "../../store/visual-editor/visual-editor.selector";
+import { showModal } from "../../store/modal/modal.action";
+import { MODAL_TYPES } from "../../store/modal/modal.types";
 
 const VisualEditorView = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
@@ -28,9 +28,43 @@ const VisualEditorView = () => {
     dispatch(setSelectedNode(newNode));
   };
 
+  const handleTitleSave = (updatedNode, allUpdatedNodes) => {
+    setNodes(allUpdatedNodes.map((node) =>
+      node.id === updatedNode.id ? updatedNode : node
+    ));
+
+    dispatch(setSelectedNode(updatedNode));
+  };
+
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    (params) => {
+      
+      const { source, target } = params;
+
+      const targetNode = nodes.find((n) => n.id === target);
+      const targetTitle = targetNode?.data.title;
+
+      if (!targetTitle) return;
+
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === source
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  description: `${
+                    node.data.description || ""
+                  }\n\n[[${targetTitle}]]`,
+                },
+              }
+            : node
+        )
+      );
+
+      return setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges, setNodes, nodes]
   );
 
   const handleNodeClick = (event, node) => {
@@ -41,7 +75,9 @@ const VisualEditorView = () => {
     dispatch(
       showModal(MODAL_TYPES.NODE_EDIT, {
         selectedNode: node,
+        nodes,
         handleNodeSave,
+        setEdges
       })
     );
   };
@@ -56,7 +92,7 @@ const VisualEditorView = () => {
 
   const handleAddNode = () => {
     const newNode = generateNewNode(nodes);
-    setNodes((prevNodes) => ([...prevNodes, newNode]));
+    setNodes((prevNodes) => [...prevNodes, newNode]);
   };
 
   const handleDeleteNode = () => {
@@ -75,12 +111,14 @@ const VisualEditorView = () => {
       showModal(MODAL_TYPES.RENAME_NODE, {
         selectedNode: node,
         anchorEl: event.currentTarget,
-        handleNodeSave,
+        handleTitleSave,
         existingNodes: nodes,
       })
     );
   };
-  const handleTest = () => console.log("Test from", selectedNode);
+  const handleTest = () => {
+
+  }
 
   return (
     <>

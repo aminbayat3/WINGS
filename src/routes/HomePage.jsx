@@ -1,4 +1,4 @@
-import VisualEditorView from "../components/VisualEditorView";
+import VisualEditorView from "../components/visual-editor/VisualEditorView";
 
 const HomePage = () => {
   return (

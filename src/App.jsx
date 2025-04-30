@@ -6,6 +6,7 @@ import { selectThemeKey } from "./store/theme/theme.selector";
 
 import HomePage from "./routes/HomePage";
 import Navigation from "./routes/navigation/Navigation.component";
+import PlayView from "./routes/PlayView";
 
 import { ThemeProvider } from "@mui/material";
 import { THEME_DATA } from "./constants/theme-names.constant";
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/" element={<Navigation />}>
           <Route index element={<HomePage />}></Route>
         </Route>
+        <Route path="/play" element={<PlayView />}></Route>
       </Routes>
       <ModalHost />
     </ThemeProvider>
