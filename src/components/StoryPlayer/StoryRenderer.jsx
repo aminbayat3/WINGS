@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import { evalCondition, extractLinks } from "./story-player.utils";
 import { useSelector } from "react-redux";
-import { selectAllNodes, selectSelectedNodeId } from "../../store/visual-editor/visual-editor.selector";
+import { selectAllNodes, selectSelectedNode } from "../../store/visual-editor/visual-editor.selector";
 
 const StoryRenderer = () => {
   const nodes = useSelector(selectAllNodes);
-  console.log("nodes", nodes)
-  const startNodeId = useSelector(selectSelectedNodeId);
-  console.log("starNodeId", startNodeId);
-  const [currentNodeId, setCurrentNodeId] = useState(startNodeId);
+  const { nodeId } = useParams();
+  const startNode = useSelector(selectSelectedNode(nodeId));
+  console.log("startNode", startNode);
+  const [currentNodeId, setCurrentNodeId] = useState(startNode.id);
   const [flags, setFlags] = useState({});
 
   const currentNode = nodes.find((n) => n.id === currentNodeId);
+
+  console.log("currentNode", currentNode)
+  console.log("nodes", nodes)
 
   useEffect(() => {
     if (!currentNode || !currentNode.flagsSet) return;

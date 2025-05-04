@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { AppBar, Toolbar, IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -9,7 +10,8 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { selectSelectedNode } from "../store/visual-editor/visual-editor.selector";
 
 const ToolbarPanel = ({ onAdd, onEdit, onRename, onDelete, onTest }) => {
-  const selectedNode = useSelector(selectSelectedNode);
+  const { nodeId } = useParams();
+  const selectedNode = useSelector((state) => selectSelectedNode(state, nodeId));
   const disabled = !selectedNode;
 
   const onHandleNodeEdit = () => {

@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useNodesState, useEdgesState, addEdge } from "@xyflow/react";
 import {
@@ -8,37 +9,44 @@ import {
 } from "./visual-editor.utils";
 import VisualEditor from "./VisualEditor";
 import ToolbarPanel from "../ToolbarPanel";
-import { setSelectedNode } from "../../store/visual-editor/visual-editor.action";
 import { selectSelectedNode } from "../../store/visual-editor/visual-editor.selector";
 import { showModal } from "../../store/modal/modal.action";
 import { MODAL_TYPES } from "../../store/modal/modal.types";
+import {
+  saveEdges,
+  saveNodes,
+} from "../../store/visual-editor/visual-editor.action";
 
 const VisualEditorView = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
   const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
-  const selectedNode = useSelector(selectSelectedNode);
+  const navigate = useNavigate();
+  const { nodeId } = useParams();
+  const selectedNode = useSelector((state) =>
+    selectSelectedNode(state, nodeId)
+  );
   const dispatch = useDispatch();
 
   const handleNodeSave = (newNode) => {
-    setNodes((prevNodes) =>
-      prevNodes.map((node) =>
-        node.id === selectedNode.id ? { ...newNode } : node
-      )
+    const updatedNodes = nodes.map((node) =>
+      node.id === selectedNode.id ? { ...newNode } : node
     );
-    dispatch(setSelectedNode(newNode));
+
+    setNodes(updatedNodes);
+    dispatch(saveNodes(updatedNodes));
   };
 
   const handleTitleSave = (updatedNode, allUpdatedNodes) => {
-    setNodes(allUpdatedNodes.map((node) =>
+    const updatedNodes = allUpdatedNodes.map((node) =>
       node.id === updatedNode.id ? updatedNode : node
-    ));
+    );
 
-    dispatch(setSelectedNode(updatedNode));
+    setNodes(updatedNodes);
+    dispatch(saveNodes(updatedNodes));
   };
 
   const onConnect = useCallback(
     (params) => {
-      
       const { source, target } = params;
 
       const targetNode = nodes.find((n) => n.id === target);
@@ -46,29 +54,32 @@ const VisualEditorView = () => {
 
       if (!targetTitle) return;
 
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === source
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  description: `${
-                    node.data.description || ""
-                  }\n\n[[${targetTitle}]]`,
-                },
-              }
-            : node
-        )
+      const updatedNodes = nodes.map((node) =>
+        node.id === source
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                description: `${
+                  node.data.description || ""
+                }\n\n[[${targetTitle}]]`,
+              },
+            }
+          : node
       );
 
-      return setEdges((eds) => addEdge(params, eds));
+      const updatedEdges = addEdge(params, edges);
+
+      setNodes(updatedNodes);
+      setEdges(updatedEdges);
+      dispatch(saveNodes(updatedNodes));
+      dispatch(saveEdges(updatedEdges));
     },
-    [setEdges, setNodes, nodes]
+    [nodes, edges, setNodes, setEdges, dispatch]
   );
 
   const handleNodeClick = (event, node) => {
-    node.id !== selectedNode?.id && dispatch(setSelectedNode(node));
+    node.id !== selectedNode?.id && navigate(`/${node.id}`);
   };
 
   const handleNodeEdit = (node) => {
@@ -77,7 +88,7 @@ const VisualEditorView = () => {
         selectedNode: node,
         nodes,
         handleNodeSave,
-        setEdges
+        setEdges,
       })
     );
   };
@@ -87,23 +98,31 @@ const VisualEditorView = () => {
   };
 
   const handlePaneClick = () => {
-    selectedNode && dispatch(setSelectedNode(null));
+    navigate("/");
   };
 
   const handleAddNode = () => {
     const newNode = generateNewNode(nodes);
-    setNodes((prevNodes) => [...prevNodes, newNode]);
+    const updatedNodes = [...nodes, newNode];
+
+    setNodes(updatedNodes);
+    dispatch(saveNodes(updatedNodes));
   };
 
   const handleDeleteNode = () => {
     if (!selectedNode) return;
-    setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
-    setEdges((eds) =>
-      eds.filter(
-        (e) => e.source !== selectedNode.id && e.target !== selectedNode.id
-      )
+
+    const updatedNodes = nodes.filter((n) => n.id !== selectedNode.id);
+    const updatedEdges = edges.filter(
+      (e) => e.source !== selectedNode.id && e.target !== selectedNode.id
     );
-    dispatch(setSelectedNode(null));
+
+    setNodes(updatedNodes);
+    setEdges(updatedEdges);
+    dispatch(saveNodes(updatedNodes));
+    dispatch(saveEdges(updatedEdges));
+
+    navigate("/");
   };
 
   const handleRename = (event, node) => {
@@ -116,9 +135,7 @@ const VisualEditorView = () => {
       })
     );
   };
-  const handleTest = () => {
-
-  }
+  const handleTest = () => {};
 
   return (
     <>

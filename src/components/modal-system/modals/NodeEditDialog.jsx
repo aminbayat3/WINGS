@@ -10,12 +10,19 @@ import {
 } from "@mui/material";
 import { useTheme } from "@emotion/react";
 import { ModalButton } from "./styles/modalButton.styles";
+import { saveEdges } from "../../../store/visual-editor/visual-editor.action";
 
 const getDefaultInputValues = (selectedNode) => ({
   description: selectedNode.data.description,
 });
 
-const NodeEditDialog = ({ selectedNode, handleNodeSave, onClose, setEdges, nodes }) => {
+const NodeEditDialog = ({
+  selectedNode,
+  handleNodeSave,
+  onClose,
+  setEdges,
+  nodes,
+}) => {
   const [inputValues, setInputValues] = useState(
     getDefaultInputValues(selectedNode)
   );
@@ -38,27 +45,26 @@ const NodeEditDialog = ({ selectedNode, handleNodeSave, onClose, setEdges, nodes
         description,
       },
     };
-  
+
     handleNodeSave(updatedNode);
-    onClose();
-  
+
     const linkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
     const foundTitles = new Set();
     let match;
-  
+
     while ((match = linkRegex.exec(description)) !== null) {
       const targetTitle = match[2] || match[1];
       foundTitles.add(targetTitle.trim());
     }
-  
+
     const sourceId = selectedNode.id;
-  
-    setEdges((prevEdges) => {
+
+    const updatedEdges = (() => {
       const newEdges = [];
       const existingTargets = new Set();
-  
+
       // Step 1: Preserve only edges that still match a [[link]]
-      prevEdges.forEach((edge) => {
+      edges.forEach((edge) => {
         if (edge.source === sourceId) {
           const targetNode = nodes.find((n) => n.id === edge.target);
           if (targetNode && foundTitles.has(targetNode.data.title)) {
@@ -69,7 +75,7 @@ const NodeEditDialog = ({ selectedNode, handleNodeSave, onClose, setEdges, nodes
           newEdges.push(edge); // Keep unrelated edges
         }
       });
-  
+
       // Step 2: Add new edges for [[links]] that don't exist yet
       foundTitles.forEach((title) => {
         const targetNode = nodes.find((n) => n.data.title === title);
@@ -81,9 +87,14 @@ const NodeEditDialog = ({ selectedNode, handleNodeSave, onClose, setEdges, nodes
           });
         }
       });
-  
+
       return newEdges;
-    });
+    })();
+
+    // Update local and Redux edges
+    setEdges(updatedEdges);
+    dispatch(saveEdges(updatedEdges));
+    onClose();
   };
 
   return (
@@ -114,16 +125,10 @@ const NodeEditDialog = ({ selectedNode, handleNodeSave, onClose, setEdges, nodes
       </DialogContent>
 
       <DialogActions>
-        <ModalButton
-          variant="contained"
-          onClick={onClose}
-        >
+        <ModalButton variant="contained" onClick={onClose}>
           Cancel
         </ModalButton>
-        <ModalButton
-          onClick={handleSaveModal}
-          variant="contained"
-        >
+        <ModalButton onClick={handleSaveModal} variant="contained">
           Save
         </ModalButton>
       </DialogActions>

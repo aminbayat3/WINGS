@@ -20,9 +20,10 @@ const App = () => {
     <ThemeProvider theme={THEME_DATA[themeKey].value}>
       <Routes>
         <Route path="/" element={<Navigation />}>
-          <Route index element={<HomePage />}></Route>
+          <Route index element={<HomePage />} />
+          <Route path=":nodeId" element={<HomePage />} />
         </Route>
-        <Route path="/play" element={<PlayView />}></Route>
+        <Route path="/:nodeId/play" element={<PlayView />} />
       </Routes>
       <ModalHost />
     </ThemeProvider>
